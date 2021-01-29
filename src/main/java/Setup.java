@@ -34,8 +34,8 @@ public abstract class Setup {
                 .set("spark.hadoop.fs.s3a.endpoint", "http://localhost:" + s3.getMappedPort())
                 .set("spark.hadoop.fs.s3a.path.style.access", "true")
                 .set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-                // iceberg runtime
-                // .set("org.apache.iceberg", "iceberg-spark3-runtime:0.10.0")
+                // enable iceberg SQL Extensions
+                .set("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")
                 .set("spark.sql.catalog.spark_catalog", "org.apache.iceberg.spark.SparkSessionCatalog")
                 .set("spark.sql.catalog.spark_catalog.type", "hadoop")
                 .set("spark.sql.catalog.spark_catalog.catalog-impl", "org.apache.iceberg.hadoop.HadoopCatalog")
