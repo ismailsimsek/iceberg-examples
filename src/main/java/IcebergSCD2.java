@@ -69,7 +69,8 @@ public class IcebergSCD2 extends Setup {
 
         LOGGER.warn("------- AFTER -------------------------------");
         spark.table("default.scd2_table").orderBy("customer_id", "effective_date").show();
-
+        LOGGER.warn("------- FINAL S3 FILES -------------------------------");
+        s3.listFiles();
     }
 
 }

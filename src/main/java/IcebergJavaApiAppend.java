@@ -1,4 +1,7 @@
-import org.apache.iceberg.*;
+import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DataFiles;
+import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.Schema;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
@@ -24,13 +27,13 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
-public class IcebergApiDeleteAppend extends Setup {
+public class IcebergJavaApiAppend extends Setup {
 
 
     ArrayList<Record> sampleIcebergrecords = Lists.newArrayList();
     ArrayList<Record> sampleIcebergrecords2 = Lists.newArrayList();
 
-    public IcebergApiDeleteAppend() throws Exception {
+    public IcebergJavaApiAppend() throws Exception {
         super();
 
         GenericRecord record = GenericRecord.create(SparkSchemaUtil.convert(sampleDf.schema()));
@@ -43,10 +46,8 @@ public class IcebergApiDeleteAppend extends Setup {
     }
 
     public static void main(String[] args) throws Exception {
-        IcebergApiDeleteAppend myExample = new IcebergApiDeleteAppend();
+        IcebergJavaApiAppend myExample = new IcebergJavaApiAppend();
         myExample.run();
-        // run append
-        // run upsert
     }
 
     public void run() throws IOException, NoSuchTableException, TableAlreadyExistsException, NoSuchNamespaceException {
@@ -67,8 +68,6 @@ public class IcebergApiDeleteAppend extends Setup {
         LOGGER.warn("------------AFTER Dataframe writeTo----------------");
         sampleDf.writeTo("default.iceberg_table").append();
         spark.sql("select * from default.iceberg_table").show();
-
-        //s3.listFiles();
 
         //---------- append data to table
         FileIO outFile = sparkTable.table().io();
@@ -95,56 +94,6 @@ public class IcebergApiDeleteAppend extends Setup {
                 .commit();
         LOGGER.warn("------------AFTER API APPEND----------------");
         spark.sql("select * from default.iceberg_table").show();
-        s3.listFiles();
-        //END ---------- append data to table
-
-        OutputFile out2 = outFile.newOutputFile(sparkTable.table().locationProvider().newDataLocation(UUID.randomUUID() + "-002"));
-        FileAppender<Record> writer2 = Parquet.write(out2)
-                .createWriterFunc(GenericParquetWriter::buildWriter)
-                .forTable(sparkTable.table())
-                .overwrite()
-                .build();
-        try (Closeable toClose = writer2) {
-            writer2.addAll(sampleIcebergrecords2);
-        }
-
-        DataFile dataFile2 = DataFiles.builder(sparkTable.table().spec())
-                .withFormat(FileFormat.PARQUET)
-                .withPath(out2.location())
-                .withFileSizeInBytes(writer2.length())
-                .withSplitOffsets(writer2.splitOffsets())
-                .withMetrics(writer2.metrics())
-                .build();
-        // DELETE
-        OutputFile out2delete = outFile.newOutputFile(sparkTable.table().locationProvider().newDataLocation(UUID.randomUUID() + "-delete-002"));
-        FileAppender<Record> writer2delete = Parquet.write(out2delete)
-                .createWriterFunc(GenericParquetWriter::buildWriter)
-                .forTable(sparkTable.table())
-                .overwrite()
-                .build();
-        try (Closeable toClose = writer2delete) {
-            writer2delete.addAll(sampleIcebergrecords2);
-        }
-
-        DeleteFile dataFile2Delete = FileMetadata.deleteFileBuilder(sparkTable.table().spec())
-                .withFormat(FileFormat.PARQUET)
-                .withPath(out2delete.location())
-                .withFileSizeInBytes(writer2delete.length())
-                .withMetrics(writer2delete.metrics())
-                .ofEqualityDeletes()
-                .build();
-
-        sparkTable.table().newRowDelta()
-                .addRows(dataFile2)
-                .addDeletes(dataFile2Delete)
-                .commit();
-
-        LOGGER.warn("------------AFTER API DELETE INSERT----------------");
-        spark.sql("select * from default.iceberg_table").show();
-
-        LOGGER.warn("------------AFTER API DELETE----------------");
-        spark.sql("select * from default.iceberg_table").show();
-
         LOGGER.warn("------------FINAL S3 FILE LIST ----------------");
         s3.listFiles();
 
