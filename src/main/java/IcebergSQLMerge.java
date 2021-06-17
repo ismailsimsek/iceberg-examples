@@ -47,6 +47,50 @@ public class IcebergSQLMerge extends Setup {
         LOGGER.warn("------- AFTER MERGE -------------------------------");
         spark.cloneSession().table("default.test_table").show(false);
 
+        String mergev2 = "MERGE INTO default.test_table t \n" +
+                "USING ( \n" +
+                // new data goes to insert
+                "    SELECT 4 as customer_id, 'customer_c-insert(with merge *)' as name, 'lastname-3-insert(with merge *)' as lastname, 'a@b.com' as email \n" +
+                "    UNION ALL \n" +
+                // update exiting record
+                "    SELECT 5 as customer_id, 'customer_b-updated(with merge *)' as name, 'lastname-2-updated(with merge *)' as lastname, 'b@c.com' as email \n" +
+                ") s \n" +
+                "ON s.customer_id = t.customer_id \n" +
+                // close last record.
+                "WHEN MATCHED \n" +
+                "  THEN UPDATE SET * \n" +
+                "WHEN NOT MATCHED THEN \n" +
+                "   INSERT *" +
+                ";";
+        LOGGER.info("merge Query\n{}", mergev2);
+        spark.sql(mergev2);
+        LOGGER.warn("------- AFTER MERGE WITH * extra column -------------------------------");
+        spark.cloneSession().table("default.test_table").show(false);
+        spark.sql("ALTER TABLE default.test_table ADD COLUMN email string");
+        spark.cloneSession().table("default.test_table").show(false);
+        spark.sql(mergev2);
+        spark.cloneSession().table("default.test_table").show(false);
+
+        String mergev3 = "MERGE INTO default.test_table t \n" +
+                "USING ( \n" +
+                // new data goes to insert
+                "    SELECT 6 as customer_id, 'customer_c-insert(with merge *)' as name, 'a@b.com' as email \n" +
+                "    UNION ALL \n" +
+                // update exiting record
+                "    SELECT 7 as customer_id, 'customer_b-updated(with merge *)' as name, 'b@c.com' as email \n" +
+                ") s \n" +
+                "ON s.customer_id = t.customer_id \n" +
+                // close last record.
+                "WHEN MATCHED \n" +
+                "  THEN UPDATE SET * \n" +
+                "WHEN NOT MATCHED THEN \n" +
+                "   INSERT *" +
+                ";";
+        LOGGER.info("merge Query\n{}", mergev3);
+        spark.sql(mergev3);
+        LOGGER.warn("------- AFTER MERGE WITH * less column -------------------------------");
+        spark.cloneSession().table("default.test_table").show(false);
+
     }
 
 }
