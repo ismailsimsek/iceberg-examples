@@ -38,7 +38,7 @@ public abstract class Setup {
                 .set("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")
                 .set("spark.sql.catalog.spark_catalog", "org.apache.iceberg.spark.SparkSessionCatalog")
                 .set("spark.sql.catalog.spark_catalog.type", "hadoop")
-                .set("spark.sql.catalog.spark_catalog.catalog-impl", "org.apache.iceberg.hadoop.HadoopCatalog")
+                //.set("spark.sql.catalog.spark_catalog.catalog-impl", "org.apache.iceberg.hadoop.HadoopCatalog")
                 .set("spark.sql.catalog.spark_catalog.warehouse", warehousePath)
                 .set("spark.sql.warehouse.dir", warehousePath)
         ;

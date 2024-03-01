@@ -86,7 +86,7 @@ public class IcebergJavaApiAppenderFactory extends Setup {
         final String fileName = UUID.randomUUID() + "-" + Instant.now().toEpochMilli() + "." + fileFormat.name();
         OutputFile out = icebergTable.io().newOutputFile(icebergTable.locationProvider().newDataLocation(fileName));
         DataWriter<Record> dw = appender.newDataWriter(icebergTable.encryption().encrypt(out), fileFormat, null);
-        sampleIcebergrecords.forEach(dw::add);
+        sampleIcebergrecords.forEach(dw::write);
         try {
             dw.close();
         } catch (IOException e) {

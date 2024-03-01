@@ -2,12 +2,7 @@ import io.minio.ListObjectsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.Result;
-import io.minio.errors.ErrorResponseException;
-import io.minio.errors.InsufficientDataException;
-import io.minio.errors.InternalException;
-import io.minio.errors.InvalidResponseException;
-import io.minio.errors.ServerException;
-import io.minio.errors.XmlParserException;
+import io.minio.errors.*;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
 import org.slf4j.Logger;
@@ -27,7 +22,7 @@ public class Minio {
     protected static final Logger LOGGER = LoggerFactory.getLogger(Minio.class);
     static final int MINIO_DEFAULT_PORT = 9000;
     static final String DEFAULT_IMAGE = "minio/minio";
-    static final String DEFAULT_TAG = "edge";
+    static final String DEFAULT_TAG = "latest";
     static final String DEFAULT_STORAGE_DIRECTORY = "/data";
     static final String HEALTH_ENDPOINT = "/minio/health/ready";
     static final String TEST_BUCKET = "testbucket";
@@ -44,6 +39,7 @@ public class Minio {
                         .withStartupTimeout(Duration.ofSeconds(30)))
                 .withEnv("MINIO_ACCESS_KEY", MINIO_ACCESS_KEY)
                 .withEnv("MINIO_SECRET_KEY", MINIO_SECRET_KEY)
+                .withExposedPorts(MINIO_DEFAULT_PORT)
                 .withCommand("server " + DEFAULT_STORAGE_DIRECTORY);
     }
 

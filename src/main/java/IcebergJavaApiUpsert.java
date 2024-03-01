@@ -157,7 +157,7 @@ public class IcebergJavaApiUpsert extends Setup {
             ;
 
             try (Closeable toClose = deleteWriter) {
-                deleteWriter.deleteAll(icebergRecords);
+                deleteWriter.write(icebergRecords);
             }
 
         } catch (IOException e) {
